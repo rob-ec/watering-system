@@ -16,9 +16,10 @@ Projeto criado como trabalho final da Capacitação em Sistemas Embarcados Embar
   - [ ] Uso de pelo menos 2 (dois) sensores;
 - [ ] Comunicação sem fio com protocolos IoT;
     - Wi-Fi/Bluetooth;
-- [ ] Uso de pelo menos um dos protocolos: MQTT, CoAP, UDP, TCP/IP ou HTTP.
+- [ ] Uso de pelo menos um dos protocolos: MQTT, CoAP, UDP, TCP/IP ou HTTP;
 - [ ] Aplicação de conceitos de segurança;
 
 ### Requisitos opcionais
-- [ ] Uso de Machine Learning (TinyML ou outra biblioteca)
-- [ ] Uso de Direct Memory Access (DMA)
+- [ ] Uso de Machine Learning (TinyML ou outra biblioteca);
+- [ ] Uso de Direct Memory Access (DMA);
+- [ ] Utilização de linguagens de alto nível para software de apoio (dashboards, servidores, scripts de integração);
