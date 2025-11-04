@@ -13,9 +13,9 @@ Projeto criado como trabalho final da Capacitação em Sistemas Embarcados Embar
   - [ ] Uso de Interrupções;
 - [ ] Integração de sensores e atuadores;
   - [ ] Uso de pelo menos 1 (um) atuador;
-  - [ ] Uso de pelo menos 2 (dois) sensores;
+  - [ ] Uso de pelo menos 2 (dois) sensores do Kit EmbarcaTech;
 - [ ] Comunicação sem fio com protocolos IoT;
-    - Wi-Fi/Bluetooth;
+  - [ ] Wi-Fi/Bluetooth;
 - [ ] Uso de pelo menos um dos protocolos: MQTT, CoAP, UDP, TCP/IP ou HTTP;
 - [ ] Aplicação de conceitos de segurança;
 
