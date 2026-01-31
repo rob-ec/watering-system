@@ -55,11 +55,14 @@ add_executable(irrigation_system
     src/button.c
     src/wifi_connection.c
     src/irrigator.c
+    src/oled.c
+    src/ssd1306.c
     ${CMAKE_CURRENT_LIST_DIR}/free_rtos_kernel/portable/MemMang/heap_4.c
 )
 
 target_include_directories(irrigation_system PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/include
     ${CMAKE_CURRENT_LIST_DIR}/src
     ${CMAKE_CURRENT_LIST_DIR}/free_rtos_kernel/include
     ${CMAKE_CURRENT_LIST_DIR}/free_rtos_kernel/portable/GCC/ARM_CM0
@@ -68,6 +71,7 @@ target_include_directories(irrigation_system PRIVATE
 # CORREÇÃO: Removida a biblioteca "pico_cyw43_arch_nonos_poll" que não é necessária.
 target_link_libraries(irrigation_system
     pico_stdlib
+    hardware_i2c
     hardware_gpio
     hardware_pwm
     pico_cyw43_arch_lwip_threadsafe_background

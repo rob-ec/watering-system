@@ -25,7 +25,7 @@ int wifi_connect(void)
                WIFI_SSID,
                WIFI_PASS,
                CYW43_AUTH_WPA2_AES_PSK,
-               WIFI_TIMEOUT) == 0;
+               WIFI_CONNECTION_TIMEOUT) == 0;
 }
 
 void keep_connection_alive_task(void *pvParameters)
@@ -55,6 +55,6 @@ void keep_connection_alive_task(void *pvParameters)
             }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(WIFI_TIMEOUT));
+        vTaskDelay(pdMS_TO_TICKS(WIFI_TASK_TIMEOUT));
     }
 }

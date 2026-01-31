@@ -17,7 +17,7 @@
 #include "task.h"
 
 // Irrigator pin acording the board adaptations described on this project documentation
-#define IRRIGATOR_PIN 3
+#define IRRIGATOR_PIN 17
 
 // Task notification values
 #define IRRIGATOR_TURN_ON 1

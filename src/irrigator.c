@@ -16,6 +16,7 @@
 #include "buzzer.h"      // For buzzer feedback
 #include <stdio.h>       // For printf
 #include <limits.h>      // For ULONG_MAX
+#include "oled.h"        // For oled_task_handle
 
 volatile uint8_t irrigator_on = 0;
 TaskHandle_t irrigator_task_handle = NULL;
@@ -31,12 +32,14 @@ void irrigator_turn_on(void)
 {
     gpio_put(IRRIGATOR_PIN, 1);
     irrigator_on = 1;
+    if (oled_task_handle != NULL) xTaskNotifyGive(oled_task_handle);
 }
 
 void irrigator_turn_off(void)
 {
     gpio_put(IRRIGATOR_PIN, 0);
     irrigator_on = 0;
+    if (oled_task_handle != NULL) xTaskNotifyGive(oled_task_handle);
 }
 
 void irrigator_toggle(void)

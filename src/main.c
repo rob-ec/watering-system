@@ -20,10 +20,12 @@
 #include "buzzer.h"
 #include "button.h"
 #include "wifi_connection.h"
+#include "oled.h"
 
 // Definição de prioridades (Maior valor = Maior prioridade no FreeRTOS)
 #define PRIO_TASK_BUZZER     2
-#define PRIO_TASK_LED        3
+#define PRIO_TASK_OLED       3
+#define PRIO_TASK_LED        4
 #define PRIO_TASK_WIFI       9  // Alta prioridade para manter conexão
 #define PRIO_TASK_IRRIGATOR  10 // Prioridade crítica para controle do hardware
 #define PRIO_TASK_BUTTON     11 // Prioridade máxima para garantir inicialização rápida das interrupções
@@ -53,6 +55,7 @@ int main() {
     // - 1: Task priority (lower priorities first).
     // - &led_rgb_task_handle: Handle to control the task.
     xTaskCreate(led_rgb_task, "LED_Task", 256, NULL, PRIO_TASK_LED, &led_rgb_task_handle);
+    xTaskCreate(oled_task, "OLED_Task", 256, NULL, PRIO_TASK_OLED, &oled_task_handle);
 
     // Creates the buzzer task with the same parameters.
     xTaskCreate(buzzer_task, "Buzzer_Task", 256, NULL, PRIO_TASK_BUZZER, &buzzer_task_handle);
