@@ -109,5 +109,6 @@ void buzzer_task(void *pvParameters)
 
     while (1)
     {
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Libera a CPU para tarefas de menor prioridade
     }
 }

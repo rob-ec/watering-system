@@ -15,10 +15,18 @@
 #include "task.h"
 
 // Includes headers for peripheral modules
+#include "irrigator.h"
 #include "led_rgb.h"
 #include "buzzer.h"
 #include "button.h"
 #include "wifi_connection.h"
+
+// Definição de prioridades (Maior valor = Maior prioridade no FreeRTOS)
+#define PRIO_TASK_BUZZER     2
+#define PRIO_TASK_LED        3
+#define PRIO_TASK_WIFI       9  // Alta prioridade para manter conexão
+#define PRIO_TASK_IRRIGATOR  10 // Prioridade crítica para controle do hardware
+#define PRIO_TASK_BUTTON     11 // Prioridade máxima para garantir inicialização rápida das interrupções
 
 /**
  * @brief Main program entry point.
@@ -44,19 +52,22 @@ int main() {
     // - NULL: Task parameters (none).
     // - 1: Task priority (lower priorities first).
     // - &led_rgb_task_handle: Handle to control the task.
-    xTaskCreate(led_rgb_task, "LED_Task", 256, NULL, 1, &led_rgb_task_handle);
+    xTaskCreate(led_rgb_task, "LED_Task", 256, NULL, PRIO_TASK_LED, &led_rgb_task_handle);
 
     // Creates the buzzer task with the same parameters.
-    xTaskCreate(buzzer_task, "Buzzer_Task", 256, NULL, 1, &buzzer_task_handle);
+    xTaskCreate(buzzer_task, "Buzzer_Task", 256, NULL, PRIO_TASK_BUZZER, &buzzer_task_handle);
 
     // Creates the button task.
     // A handle is not necessary as this task will not be controlled by others.
-    // Priority is 2, higher than others, to ensure buttons have a fast response.
-    xTaskCreate(button_task, "Button_Task", 256, NULL, 2, NULL);
+    // Priority set to high to ensure interrupts are initialized before heavy tasks (like WiFi).
+    xTaskCreate(button_task, "Button_Task", 256, NULL, PRIO_TASK_BUTTON, NULL);
 
     // Creates the Wi-Fi connection management task.
     // Requires a larger stack (1024) due to network operations.
-    xTaskCreate(keep_connection_alive_task, "WiFi_Task", 1024, NULL, 1, NULL);
+    xTaskCreate(keep_connection_alive_task, "WiFi_Task", 1024, NULL, PRIO_TASK_WIFI, NULL);
+
+    // 
+    xTaskCreate(irrigator_task, "Irrigator_Task", 256, NULL, PRIO_TASK_IRRIGATOR, &irrigator_task_handle);
 
     // Starts the FreeRTOS scheduler.
     // From this point on, FreeRTOS takes control of the processor

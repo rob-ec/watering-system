@@ -30,6 +30,7 @@ extern TaskHandle_t led_rgb_task_handle;
 void led_rgb_init(void);
 void led_rgb_set_color(int r, int g, int b);
 void led_rgb_set_hex_color(uint32_t hex_color);
+void led_rgb_turn_off(void);
 
 /**
  * @brief Task that controls the RGB LED color cycle.

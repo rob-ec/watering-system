@@ -14,6 +14,8 @@
 #include "FreeRTOS.h"    // For FreeRTOS types
 #include "task.h"        // For vTaskDelay, TaskHandle_t, etc.
 
+#include "irrigator.h" // For irrigator status checking
+
 // Array with LED pins for easier access.
 const uint8_t led_pins[] = {LED_R_PIN, LED_G_PIN, LED_B_PIN};
 
@@ -36,6 +38,11 @@ void led_rgb_set_color(int r, int g, int b)
     gpio_put(LED_R_PIN, r);
     gpio_put(LED_G_PIN, g);
     gpio_put(LED_B_PIN, b);
+}
+
+void led_rgb_turn_off(void)
+{
+    led_rgb_set_color(0, 0, 0);
 }
 
 void led_rgb_set_hex_color(uint32_t hex_color)
@@ -62,5 +69,14 @@ void led_rgb_task(void *pvParameters)
 
     while (1)
     {
+        if (irrigator_is_on())
+        {
+            led_rgb_set_hex_color(0x00FF00);
+        }
+        else
+        {
+            led_rgb_turn_off();
+        }
+        vTaskDelay(pdMS_TO_TICKS(100)); // Boas práticas: evita consumo excessivo de CPU
     }
 }

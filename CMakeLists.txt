@@ -54,6 +54,7 @@ add_executable(irrigation_system
     src/buzzer.c
     src/button.c
     src/wifi_connection.c
+    src/irrigator.c
     ${CMAKE_CURRENT_LIST_DIR}/free_rtos_kernel/portable/MemMang/heap_4.c
 )
 
