@@ -19,8 +19,8 @@
 
 #define WIFI_SSID "NOME_DO_WIFI"
 #define WIFI_PASS "SENHA_DO_WIFI"
-#define WIFI_TASK_TIMEOUT 30000 // ms
-#define WIFI_CONNECTION_TIMEOUT 5000 // ms
+#define WIFI_TASK_TIMEOUT 10000 // ms
+#define WIFI_CONNECTION_TIMEOUT 30000 // ms
 
 /**
  * @brief Attempt to connect to Wi-Fi
