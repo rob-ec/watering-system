@@ -57,6 +57,7 @@ add_executable(irrigation_system
     src/irrigator.c
     src/oled.c
     src/ssd1306.c
+    src/aht10.c
     ${CMAKE_CURRENT_LIST_DIR}/free_rtos_kernel/portable/MemMang/heap_4.c
 )
 
