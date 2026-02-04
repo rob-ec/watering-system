@@ -22,6 +22,18 @@
 // Task notification values
 #define IRRIGATOR_TURN_ON 1
 #define IRRIGATOR_TURN_OFF 2
+#define IRRIGATOR_REMOTE_TURN_ON 3
+#define IRRIGATOR_REMOTE_TURN_OFF 4
+
+struct schedule_item
+{
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t duration; // in seconds
+    uint8_t active;
+};
+
+typedef struct schedule_item schedule_item_t;
 
 /**
  * @brief Handle for irrigator task.
@@ -34,6 +46,7 @@ void irrigator_turn_on(void);
 void irrigator_turn_off(void);
 void irrigator_toggle(void);
 int irrigator_is_on(void);
+void irrigator_set_schedule(int index, uint8_t hour, uint8_t minute, uint8_t duration, uint8_t active);
 void irrigator_task(void *pvParameters);
 
 #endif // IRRIGATOR_H

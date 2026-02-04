@@ -25,11 +25,11 @@
 #include "clock.h"
 
 // Definição de prioridades (Maior valor = Maior prioridade no FreeRTOS)
-#define PRIO_TASK_WIFI       1  // Baixa prioridade: conexão em background (evita travar UI)
-#define PRIO_TASK_BUZZER     2
-#define PRIO_TASK_OLED       3
-#define PRIO_TASK_CLOCK_SYNC 2
-#define PRIO_TASK_LED        4
+#define PRIO_TASK_WIFI       2  // Baixa prioridade: conexão em background (evita travar UI)
+#define PRIO_TASK_BUZZER     3
+#define PRIO_TASK_OLED       4
+#define PRIO_TASK_CLOCK_SYNC 1
+#define PRIO_TASK_LED        5
 #define PRIO_TASK_AHT10      12  // Monitoramento de sensores
 #define PRIO_TASK_IRRIGATOR  10 // Prioridade crítica para controle do hardware
 #define PRIO_TASK_BUTTON     11 // Prioridade máxima para garantir inicialização rápida das interrupções
