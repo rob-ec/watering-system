@@ -8,6 +8,8 @@
 #include "BMSPA_font.h"
 #include "irrigator.h"
 #include "aht10.h"
+#include "hardware/rtc.h"
+#include "clock.h"
 
 #include <stdio.h>
 
@@ -51,6 +53,9 @@ void oled_task(void *pvParameters)
     float hum = 0.0;
     char temperature_status[20];
     char humidity_status[20];
+    char date_string[20];
+
+    datetime_t t;
 
     while (true)
     {
@@ -70,6 +75,18 @@ void oled_task(void *pvParameters)
         // Se receber notificação (>0), reinicia o loop para atualizar o status imediatamente
         if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(2000)) > 0)
             continue;
+
+        if (clock_get_time(&t))
+        {
+            ssd1306_clear(&disp);
+            snprintf(irrigator_status, sizeof(irrigator_status), "%02d:%02d:%02d", t.hour, t.min, t.sec);
+            ssd1306_draw_string(&disp, 0, 16, 2, irrigator_status);
+            snprintf(date_string, sizeof(date_string), "%02d/%02d/%02d", t.day, t.month, t.year);
+            ssd1306_draw_string(&disp, 0, 32, 1, date_string);
+            ssd1306_show(&disp);
+
+            ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(2000));
+        }
 
         ssd1306_clear(&disp);
         ssd1306_draw_string(&disp, 0, 24, 2, temperature_status);

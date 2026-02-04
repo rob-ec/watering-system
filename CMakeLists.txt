@@ -57,6 +57,7 @@ add_executable(irrigation_system
     src/irrigator.c
     src/oled.c
     src/ssd1306.c
+    src/clock.c
     src/aht10.c
     ${CMAKE_CURRENT_LIST_DIR}/free_rtos_kernel/portable/MemMang/heap_4.c
 )
@@ -75,6 +76,7 @@ target_link_libraries(irrigation_system
     hardware_i2c
     hardware_gpio
     hardware_pwm
+    hardware_rtc
     pico_cyw43_arch_lwip_threadsafe_background
     # pico_cyw43_arch_none
     freertos_kernel

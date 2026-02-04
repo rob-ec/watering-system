@@ -8,6 +8,7 @@
 
 #define LWIP_NETIF_HOSTNAME         1
 #define LWIP_DHCP                   1
+#define LWIP_DNS                    1
 
 #define LWIP_TIMEVAL_PRIVATE        0
 

@@ -22,11 +22,13 @@
 #include "wifi_connection.h"
 #include "oled.h"
 #include "aht10.h"
+#include "clock.h"
 
 // Definição de prioridades (Maior valor = Maior prioridade no FreeRTOS)
 #define PRIO_TASK_WIFI       1  // Baixa prioridade: conexão em background (evita travar UI)
 #define PRIO_TASK_BUZZER     2
 #define PRIO_TASK_OLED       3
+#define PRIO_TASK_CLOCK_SYNC 2
 #define PRIO_TASK_LED        4
 #define PRIO_TASK_AHT10      12  // Monitoramento de sensores
 #define PRIO_TASK_IRRIGATOR  10 // Prioridade crítica para controle do hardware
@@ -47,6 +49,7 @@
 int main() {
     // Initializes USB serial communication for debugging (optional)
     stdio_init_all();
+    clock_init();
 
     // Creates the RGB LED task.
     // Parameters:
@@ -70,6 +73,9 @@ int main() {
     // Creates the Wi-Fi connection management task.
     // Requires a larger stack (1024) due to network operations.
     xTaskCreate(keep_connection_alive_task, "WiFi_Task", 1024, NULL, PRIO_TASK_WIFI, NULL);
+
+    // Cria a tarefa de sincronização de relógio (NTP)
+    xTaskCreate(clock_sync_task, "Clock_Sync_Task", 1024, NULL, PRIO_TASK_CLOCK_SYNC, NULL);
 
     // Creates the AHT10 Sensor task
     xTaskCreate(aht10_task, "Hum_Temp_Task", 1024*2, NULL, PRIO_TASK_AHT10, NULL);
