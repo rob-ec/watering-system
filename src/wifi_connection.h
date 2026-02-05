@@ -35,6 +35,11 @@ int wifi_connect(void);
 int wifi_is_connected(void);
 
 /**
+ * @brief Verify if the Wi-Fi has internet
+ */
+int wifi_has_internet(void);
+
+/**
  * @brief Task that keeps the Wi-Fi connection alive
  * @param pvParameters Task parameters
  */

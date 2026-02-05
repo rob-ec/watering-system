@@ -21,6 +21,7 @@
 
 static uint8_t irrigator_on = 0;
 static schedule_item_t schedule[IRRIGATOR_MAX_SCHEDULE_SIZE];
+static int remote_duration = 0;
 TaskHandle_t irrigator_task_handle = NULL;
 
 void irrigator_set_schedule(int index, uint8_t hour, uint8_t minute, uint8_t duration, uint8_t active)
@@ -32,6 +33,11 @@ void irrigator_set_schedule(int index, uint8_t hour, uint8_t minute, uint8_t dur
         schedule[index].duration = duration;
         schedule[index].active = active;
     }
+}
+
+void irrigator_set_remote_duration(int duration)
+{
+    remote_duration = duration;
 }
 
 void irrigator_get_all_schedules(schedule_item_t *items)
@@ -104,7 +110,14 @@ void irrigator_task(void *pvParameters)
                 if (!irrigator_is_on())
                 {
                     irrigator_turn_on();
-                    remaining_duration = 0; // Manual/Remote activation
+                    
+                    if (notification_value == IRRIGATOR_REMOTE_TURN_ON) {
+                        remaining_duration = remote_duration;
+                        remote_duration = 0; // Reset
+                    } else {
+                        remaining_duration = 0; // Manual activation
+                    }
+
                     if (notification_value == IRRIGATOR_TURN_ON)
                     { // Buzzer only for button
                         buzzer_song_of_storms();
@@ -112,7 +125,7 @@ void irrigator_task(void *pvParameters)
                     }
                     else
                     {
-                        printf("Irrigação ativada remotamente!\n");
+                        printf("Irrigação ativada remotamente! Duração: %d s\n", remaining_duration);
                     }
                 }
                 else

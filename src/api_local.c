@@ -9,6 +9,8 @@
 #include "lwip/tcp.h"
 #include "pico/cyw43_arch.h"
 #include "aht10.h"
+#include "wifi_connection.h"
+#include "irrigator.h"
 #include "hardware/rtc.h"
 #include <string.h>
 #include <stdio.h>
@@ -61,6 +63,25 @@ static int get_json_int_value(const char *json, const char *key, int default_val
     while (*val_start && (*val_start == ' ' || *val_start == '\t' || *val_start == '\"')) val_start++;
     
     return atoi(val_start);
+}
+
+static bool get_json_bool_value(const char *json, const char *key, bool default_val) {
+    char search_key[64];
+    snprintf(search_key, sizeof(search_key), "\"%s\"", key);
+    
+    const char *key_pos = strstr(json, search_key);
+    if (!key_pos) return default_val;
+
+    const char *colon = strchr(key_pos, ':');
+    if (!colon) return default_val;
+
+    const char *val_start = colon + 1;
+    while (*val_start && (*val_start == ' ' || *val_start == '\t' || *val_start == '\"')) val_start++;
+    
+    if (strncmp(val_start, "true", 4) == 0) return true;
+    if (strncmp(val_start, "false", 5) == 0) return false;
+    
+    return default_val;
 }
 
 static err_t http_send_response(struct tcp_pcb *pcb, const char *payload, int code) {
@@ -300,6 +321,26 @@ static err_t http_recv_callback(void *arg, struct tcp_pcb *pcb, struct pbuf *p, 
             free(response);
         } else {
             http_send_response(pcb, "{\"error\": \"memory\"}", 500);
+        }
+    } else if (strncmp(rx_buffer, "POST /irrigator ", 16) == 0) {
+        char *body = strstr(rx_buffer, "\r\n\r\n");
+        if (body) {
+            body += 4; // Skip CRLFCRLF
+            bool active = get_json_bool_value(body, "active", false);
+            
+            if (active) {
+                int duration = get_json_int_value(body, "duration", 60);
+                if (duration > 360) duration = 360; // Max 6 min
+                
+                irrigator_set_remote_duration(duration);
+                xTaskNotify(irrigator_task_handle, IRRIGATOR_REMOTE_TURN_ON, eSetValueWithOverwrite);
+                http_send_response(pcb, "{\"status\": \"irrigator on\"}", 200);
+            } else {
+                xTaskNotify(irrigator_task_handle, IRRIGATOR_REMOTE_TURN_OFF, eSetValueWithOverwrite);
+                http_send_response(pcb, "{\"status\": \"irrigator off\"}", 200);
+            }
+        } else {
+            http_send_response(pcb, "{\"error\": \"no body\"}", 400);
         }
     } else if (strncmp(rx_buffer, "POST /schedule ", 15) == 0) {
         char *body = strstr(rx_buffer, "\r\n\r\n");

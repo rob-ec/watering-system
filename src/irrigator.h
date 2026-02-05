@@ -49,6 +49,7 @@ void irrigator_turn_off(void);
 void irrigator_toggle(void);
 int irrigator_is_on(void);
 void irrigator_set_schedule(int index, uint8_t hour, uint8_t minute, uint8_t duration, uint8_t active);
+void irrigator_set_remote_duration(int duration);
 void irrigator_get_all_schedules(schedule_item_t *items);
 void irrigator_task(void *pvParameters);
 

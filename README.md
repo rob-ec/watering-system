@@ -57,6 +57,7 @@ Método | Endpoint | Descrição | Entrada | Retorno
 `POST` | `/clock` | Configura o relógio manualmente (sem internet). | `{year: int, month: int, day: int, hour: int, min: int, sec: int}` | `{status: string}`
 `GET`  | `/data`  | Retorna dados completos do sistema e módulos. | | `{board: {...}, module: {...}, system: {...}}`
 `GET`  | `/status`| Retorna o status completo dos módulos (Relógio, Irrigador, Sensores, Wi-Fi). | | `{clock: {...}, irrigator: {...}, sensors: {...}, wifi: {...}}`
+`POST` | `/irrigator` | Controla o acionamento do irrigador. | `{active: bool, duration: int}` | `{status: string}`
 `GET`| `/schedule` | Retorna todo o calendário de horários de irrigação. | | `[{index: int, hour: int, minute: int, duration: int, active: int},...]` 
 `POST` | `/schedule` | Atualiza um item do agendamento. | `{index: int, hour: int, minute: int, duration: int, active: int}` | `{status: string}`
 
