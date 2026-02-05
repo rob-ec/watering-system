@@ -48,6 +48,8 @@ void keep_connection_alive_task(void *pvParameters)
             if (wifi_connect())
             {
                 printf("Wi-Fi Conectado!\n");
+                struct netif *n = &cyw43_state.netif[CYW43_ITF_STA];
+                printf("IP: %s\n", ip4addr_ntoa(netif_ip4_addr(n)));
             }
             else
             {

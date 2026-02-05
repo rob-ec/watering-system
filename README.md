@@ -7,13 +7,18 @@ Projeto criado como trabalho final da Capacitação em Sistemas Embarcados Embar
 ## Requisitos
 - [x] Utilizar Bitdoglab (RP 2040);
 - [x] Programação de microcontroladores em C/C++;
-- [ ] Utilizar Display Gráfico;
+- [x] Utilizar Display Gráfico;
 - [x] Interface UART;
 - [x] Uso de RTOS (FreeRTOS);
-  - [ ] Uso de Interrupções;
-- [ ] Integração de sensores e atuadores;
-  - [ ] Uso de pelo menos 1 (um) atuador;
-  - [ ] Uso de pelo menos 2 (dois) sensores do Kit EmbarcaTech;
+  - [x] Uso de Interrupções;
+- [x] Integração de sensores e atuadores;
+  - [x] Uso de pelo menos 1 (um) atuador;
+    - [x] Relé 220V;
+    - [x] Buzzer;
+    - [x] LED;
+  - [x] Uso de pelo menos 2 (dois) sensores do Kit EmbarcaTech;
+    - [x] Sensor de Temperatura
+    - [x] Sensor de Umidade
 - [x] Comunicação sem fio com protocolos IoT;
   - [x] Wi-Fi/Bluetooth;
 - [x] Uso de pelo menos um dos protocolos: MQTT, CoAP, UDP, TCP/IP ou HTTP;
@@ -36,6 +41,20 @@ Antes de compilar, mude as configurações de Wi-Fi para as configurações da s
 #define WIFI_SSID "NOME_DO_WIFI"
 #define WIFI_PASS "SENHA_DO_WIFI"
 ```
+
+## Acesso HTTP
+
+### Rede Local
+
+Para acesso em rede local é nescessário saber o `IP` do aparelho. A nível de Monitor Serial isso é informado quando a conexão com Wi-Fi é estabelecida.
+
+#### Endpoints
+
+Método | Endpoint | Descrição | Entrada | Retorno
+-------|----------|-----------|---------|--------
+`GET`  | `/`      | Retorna informações sobre o dispositivo. | | `{...}`
+`POST` | `/serial`| Destinado a teste de conexão. Imprime os dados enviados no monitor serial.| `{author: string, message: string}` | `{status: string}`
+`POST` | `/clock` | Configura o relógio manualmente (sem internet). | `{year: int, month: int, day: int, hour: int, min: int, sec: int}` | `{status: string}`
 
 ## Autor
 
