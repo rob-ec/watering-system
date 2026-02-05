@@ -25,6 +25,8 @@
 #define IRRIGATOR_REMOTE_TURN_ON 3
 #define IRRIGATOR_REMOTE_TURN_OFF 4
 
+#define IRRIGATOR_MAX_SCHEDULE_SIZE 4
+
 struct schedule_item
 {
     uint8_t hour;
@@ -47,6 +49,7 @@ void irrigator_turn_off(void);
 void irrigator_toggle(void);
 int irrigator_is_on(void);
 void irrigator_set_schedule(int index, uint8_t hour, uint8_t minute, uint8_t duration, uint8_t active);
+void irrigator_get_all_schedules(schedule_item_t *items);
 void irrigator_task(void *pvParameters);
 
 #endif // IRRIGATOR_H

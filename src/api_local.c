@@ -162,6 +162,41 @@ static err_t http_recv_callback(void *arg, struct tcp_pcb *pcb, struct pbuf *p, 
                 http_send_response(pcb, "{\"status\": \"invalid datetime\"}", 400);
             }
         }
+    } else if (strncmp(rx_buffer, "GET /schedule ", 14) == 0) {
+        schedule_item_t schedules[4];
+        irrigator_get_all_schedules(schedules);
+        
+        char response[512];
+        int offset = snprintf(response, sizeof(response), "[");
+        for (int i = 0; i < 4; i++) {
+            if (i > 0) offset += snprintf(response + offset, sizeof(response) - offset, ",");
+            offset += snprintf(response + offset, sizeof(response) - offset, 
+                "{\"index\":%d,\"hour\":%d,\"minute\":%d,\"duration\":%d,\"active\":%d}",
+                i, schedules[i].hour, schedules[i].minute, schedules[i].duration, schedules[i].active);
+        }
+        snprintf(response + offset, sizeof(response) - offset, "]");
+        
+        http_send_response(pcb, response, 200);
+    } else if (strncmp(rx_buffer, "POST /schedule ", 15) == 0) {
+        char *body = strstr(rx_buffer, "\r\n\r\n");
+        if (body) {
+            body += 4; // Skip CRLFCRLF
+            int index = get_json_int_value(body, "index", -1);
+            
+            if (index >= 0 && index < IRRIGATOR_MAX_SCHEDULE_SIZE) {
+                int hour = get_json_int_value(body, "hour", 0);
+                int minute = get_json_int_value(body, "minute", 0);
+                int duration = get_json_int_value(body, "duration", 60);
+                int active = get_json_int_value(body, "active", 1);
+
+                irrigator_set_schedule(index, (uint8_t)hour, (uint8_t)minute, (uint8_t)duration, (uint8_t)active);
+                http_send_response(pcb, "{\"status\": \"schedule updated\"}", 200);
+            } else {
+                http_send_response(pcb, "{\"error\": \"invalid index\"}", 400);
+            }
+        } else {
+            http_send_response(pcb, "{\"error\": \"no body\"}", 400);
+        }
     } else {
         http_send_response(pcb, "{\"error\": \"not found\"}", 404);
     }

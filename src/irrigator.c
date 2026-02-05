@@ -20,17 +20,25 @@
 #include "clock.h"
 
 static uint8_t irrigator_on = 0;
-static schedule_item_t schedule[4];
+static schedule_item_t schedule[IRRIGATOR_MAX_SCHEDULE_SIZE];
 TaskHandle_t irrigator_task_handle = NULL;
 
 void irrigator_set_schedule(int index, uint8_t hour, uint8_t minute, uint8_t duration, uint8_t active)
 {
-    if (index >= 0 && index < 4)
+    if (index >= 0 && index < IRRIGATOR_MAX_SCHEDULE_SIZE)
     {
         schedule[index].hour = hour;
         schedule[index].minute = minute;
         schedule[index].duration = duration;
         schedule[index].active = active;
+    }
+}
+
+void irrigator_get_all_schedules(schedule_item_t *items)
+{
+    for (int i = 0; i < IRRIGATOR_MAX_SCHEDULE_SIZE; i++)
+    {
+        items[i] = schedule[i];
     }
 }
 
@@ -165,7 +173,7 @@ void irrigator_task(void *pvParameters)
                 // Check start triggers
                 if (t.sec == 0)
                 {
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < IRRIGATOR_MAX_SCHEDULE_SIZE; i++)
                     {
                         if (schedule[i].active && schedule[i].hour == t.hour && schedule[i].minute == t.min)
                         {
