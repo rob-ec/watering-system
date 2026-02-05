@@ -55,6 +55,8 @@ Método | Endpoint | Descrição | Entrada | Retorno
 `GET`  | `/`      | Retorna informações sobre o dispositivo. | | `{...}`
 `POST` | `/serial`| Destinado a teste de conexão. Imprime os dados enviados no monitor serial.| `{author: string, message: string}` | `{status: string}`
 `POST` | `/clock` | Configura o relógio manualmente (sem internet). | `{year: int, month: int, day: int, hour: int, min: int, sec: int}` | `{status: string}`
+`GET`  | `/data`  | Retorna dados completos do sistema e módulos. | | `{board: {...}, module: {...}, system: {...}}`
+`GET`  | `/status`| Retorna o status completo dos módulos (Relógio, Irrigador, Sensores, Wi-Fi). | | `{clock: {...}, irrigator: {...}, sensors: {...}, wifi: {...}}`
 `GET`| `/schedule` | Retorna todo o calendário de horários de irrigação. | | `[{index: int, hour: int, minute: int, duration: int, active: int},...]` 
 `POST` | `/schedule` | Atualiza um item do agendamento. | `{index: int, hour: int, minute: int, duration: int, active: int}` | `{status: string}`
 

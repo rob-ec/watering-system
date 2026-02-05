@@ -8,12 +8,13 @@
 #include "api_local.h"
 #include "lwip/tcp.h"
 #include "pico/cyw43_arch.h"
+#include "aht10.h"
 #include "hardware/rtc.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define RX_BUFFER_SIZE 2048
+#define RX_BUFFER_SIZE 4096
 
 static struct tcp_pcb *server_pcb;
 
@@ -73,9 +74,31 @@ static err_t http_send_response(struct tcp_pcb *pcb, const char *payload, int co
         "Connection: close\r\n"
         "\r\n",
         code, status_str, (int)strlen(payload));
+    
+    size_t payload_len = strlen(payload);
+    
+    // Debug: Verifica se o buffer TCP comporta a resposta
+    if (tcp_sndbuf(pcb) < strlen(header) + payload_len) {
+        printf("API Warning: Response size (%d) > TCP Send Buffer (%d)\n", 
+               (int)(strlen(header) + payload_len), tcp_sndbuf(pcb));
+    }
 
     tcp_write(pcb, header, strlen(header), TCP_WRITE_FLAG_COPY);
-    tcp_write(pcb, payload, strlen(payload), TCP_WRITE_FLAG_COPY);
+    
+    // Envia o payload em chunks para evitar erro de alocação (ERR_MEM) no lwIP
+    size_t sent = 0;
+    while (sent < payload_len) {
+        size_t chunk = payload_len - sent;
+        if (chunk > 1024) chunk = 1024; // Limita o chunk a 1KB
+        
+        err_t err = tcp_write(pcb, payload + sent, chunk, TCP_WRITE_FLAG_COPY);
+        if (err != ERR_OK) {
+            printf("API Error: tcp_write failed at offset %d (err %d)\n", (int)sent, err);
+            break;
+        }
+        sent += chunk;
+    }
+    
     tcp_output(pcb);
     
     return ERR_OK;
@@ -112,7 +135,7 @@ static err_t http_recv_callback(void *arg, struct tcp_pcb *pcb, struct pbuf *p, 
 
         char response[256];
         snprintf(response, sizeof(response), 
-            "{\"hardwareVersion\": \"BitDogLab\", \"systemTime\": {"
+            "{\"hardwareVersion\": \"BitDogLab V6.3\", \"systemTime\": {"
             "\"year\": %d, \"month\": %d, \"day\": %d, "
             "\"dotw\": %d, \"hour\": %d, \"min\": %d, \"sec\": %d}}",
             t.year, t.month, t.day, t.dotw, t.hour, t.min, t.sec);
@@ -177,6 +200,107 @@ static err_t http_recv_callback(void *arg, struct tcp_pcb *pcb, struct pbuf *p, 
         snprintf(response + offset, sizeof(response) - offset, "]");
         
         http_send_response(pcb, response, 200);
+    } else if (strncmp(rx_buffer, "GET /status ", 12) == 0) {
+        char *response = malloc(RX_BUFFER_SIZE);
+        if (response) {
+            int offset = 0;
+            
+            datetime_t t;
+            if (!clock_get_time(&t)) memset(&t, 0, sizeof(t));
+            
+            float temp, hum;
+            aht10_get_latest_readings(&temp, &hum);
+            
+            schedule_item_t schedules[IRRIGATOR_MAX_SCHEDULE_SIZE];
+            irrigator_get_all_schedules(schedules);
+
+            offset += snprintf(response + offset, RX_BUFFER_SIZE - offset, 
+                "{"
+                "\"clock\":{\"synchronizedNTP\":%s,\"time\":{\"year\":%d,\"month\":%d,\"day\":%d,\"dotw\":%d,\"hour\":%d,\"min\":%d,\"sec\":%d}},"
+                "\"irrigator\":{\"active\":%s,\"schedule\":[",
+                is_ntp_synchronized() ? "true" : "false",
+                t.year, t.month, t.day, t.dotw, t.hour, t.min, t.sec,
+                irrigator_is_on() ? "true" : "false"
+            );
+
+            for (int i = 0; i < IRRIGATOR_MAX_SCHEDULE_SIZE; i++) {
+                if (i > 0) offset += snprintf(response + offset, RX_BUFFER_SIZE - offset, ",");
+                offset += snprintf(response + offset, RX_BUFFER_SIZE - offset, 
+                    "{\"index\":%d,\"hour\":%d,\"minute\":%d,\"duration\":%d,\"active\":%d}",
+                    i, schedules[i].hour, schedules[i].minute, schedules[i].duration, schedules[i].active);
+            }
+
+            offset += snprintf(response + offset, RX_BUFFER_SIZE - offset, 
+                "]},"
+                "\"sensors\":{\"temperature\":%.2f,\"humidity\":%.2f},"
+                "\"wifi\":{\"hasInternetConnection\":%s}"
+                "}",
+                temp, hum,
+                wifi_has_internet() ? "true" : "false"
+            );
+
+            http_send_response(pcb, response, 200);
+            free(response);
+        } else {
+            http_send_response(pcb, "{\"error\": \"memory\"}", 500);
+        }
+    } else if (strncmp(rx_buffer, "GET /data ", 10) == 0) {
+        char *response = malloc(RX_BUFFER_SIZE);
+        if (response) {
+            int offset = 0;
+            
+            datetime_t t;
+            if (!clock_get_time(&t)) memset(&t, 0, sizeof(t));
+            
+            float temp, hum;
+            aht10_get_latest_readings(&temp, &hum);
+            
+            schedule_item_t schedules[IRRIGATOR_MAX_SCHEDULE_SIZE];
+            irrigator_get_all_schedules(schedules);
+
+            struct netif *n = &cyw43_state.netif[CYW43_ITF_STA];
+            char ip_str[16];
+            strncpy(ip_str, ip4addr_ntoa(netif_ip4_addr(n)), sizeof(ip_str));
+            ip_str[sizeof(ip_str)-1] = '\0';
+
+            offset += snprintf(response + offset, RX_BUFFER_SIZE - offset, 
+                "{\"board\":{\"model\":\"BitDogLab\",\"version\":\"v6.3\",\"description\":\"BitDogLab - EmbarcaTech\"},"
+                "\"module\":{"
+                "\"buttons\":{\"name\":\"Botões A/B\",\"description\":\"(A) Ligar, (B) Desligar (Prioritário).\"},"
+                "\"buzzer\":{\"name\":\"Buzzer\",\"description\":\"Feedback sonoro.\"},"
+                "\"clock\":{\"name\":\"RTC\",\"description\":\"Relógio interno (sincroniza via NTP).\",\"synchronizedNTP\":%s,\"time\":{\"year\":%d,\"month\":%d,\"day\":%d,\"dotw\":%d,\"hour\":%d,\"min\":%d,\"sec\":%d}},"
+                "\"irrigator\":{\"name\":\"Irrigador\",\"description\":\"Relé 5V para válvula solenoide.\",\"active\":%s,\"schedule\":[",
+                is_ntp_synchronized() ? "true" : "false",
+                t.year, t.month, t.day, t.dotw, t.hour, t.min, t.sec,
+                irrigator_is_on() ? "true" : "false"
+            );
+
+            for (int i = 0; i < IRRIGATOR_MAX_SCHEDULE_SIZE; i++) {
+                if (i > 0) offset += snprintf(response + offset, RX_BUFFER_SIZE - offset, ",");
+                offset += snprintf(response + offset, RX_BUFFER_SIZE - offset, 
+                    "{\"index\":%d,\"hour\":%d,\"minute\":%d,\"duration\":%d,\"active\":%d}",
+                    i, schedules[i].hour, schedules[i].minute, schedules[i].duration, schedules[i].active);
+            }
+
+            offset += snprintf(response + offset, RX_BUFFER_SIZE - offset, 
+                "]},"
+                "\"led\":{\"name\":\"LED\",\"description\":\"Indica irrigação ativa.\"},"
+                "\"oled\":{\"name\":\"OLED\",\"description\":\"Display de status SSD1306.\"},"
+                "\"humidityAndTemperature\":{\"name\":\"AHT10\",\"description\":\"Sensor de Temp/Hum.\",\"humidity\":%.2f,\"temperature\":%.2f},"
+                "\"wifi\":{\"name\":\"Wi-Fi\",\"description\":\"Conexão sem fio.\",\"internet\":{\"connected\":%s},\"ip\":\"%s\"}"
+                "},"
+                "\"system\":{\"os\":\"FreeRTOS\",\"version\":\"v1.0.1\"}"
+                "}",
+                hum, temp,
+                wifi_has_internet() ? "true" : "false",
+                ip_str
+            );
+
+            http_send_response(pcb, response, 200);
+            free(response);
+        } else {
+            http_send_response(pcb, "{\"error\": \"memory\"}", 500);
+        }
     } else if (strncmp(rx_buffer, "POST /schedule ", 15) == 0) {
         char *body = strstr(rx_buffer, "\r\n\r\n");
         if (body) {

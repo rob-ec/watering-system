@@ -21,6 +21,11 @@
 void clock_init(void);
 
 /**
+ * @brief Verifica se a sincronização NTP foi bem sucedida.
+ */
+bool is_ntp_synchronized(void);
+
+/**
  * @brief Obtém a data e hora atuais do RTC.
  * @param t Ponteiro para a estrutura datetime_t onde os dados serão preenchidos.
  * @return true se a leitura for bem sucedida, false caso contrário.

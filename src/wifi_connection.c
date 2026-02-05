@@ -13,6 +13,14 @@
 #include "pico/stdlib.h"     // gpio_...
 #include "FreeRTOS.h"        // FreeRTOS Types
 #include "task.h"            // vTaskDelay, TaskHandle_t, etc.
+#include "lwip/dns.h"
+
+static volatile int internet_connected = 0;
+
+int wifi_has_internet(void)
+{
+    return internet_connected;
+}
 
 int wifi_is_connected(void)
 {
@@ -26,6 +34,15 @@ int wifi_connect(void)
                WIFI_PASS,
                CYW43_AUTH_WPA2_AES_PSK,
                WIFI_CONNECTION_TIMEOUT) == 0;
+}
+
+static void dns_found_cb(const char *name, const ip_addr_t *ipaddr, void *callback_arg)
+{
+    if (ipaddr) {
+        internet_connected = 1;
+    } else {
+        internet_connected = 0;
+    }
 }
 
 void keep_connection_alive_task(void *pvParameters)
@@ -43,6 +60,7 @@ void keep_connection_alive_task(void *pvParameters)
     {
         if (!wifi_is_connected())
         {
+            internet_connected = 0;
             printf("Conectando ao Wi-Fi: %s...\n", WIFI_SSID);
 
             if (wifi_connect())
@@ -54,6 +72,19 @@ void keep_connection_alive_task(void *pvParameters)
             else
             {
                 printf("Falha na conexão Wi-Fi.\n");
+            }
+        }
+        else
+        {
+            cyw43_arch_lwip_begin();
+            ip_addr_t ip;
+            int err = dns_gethostbyname("google.com", &ip, dns_found_cb, NULL);
+            cyw43_arch_lwip_end();
+
+            if (err == ERR_OK) {
+                internet_connected = 1;
+            } else if (err != ERR_INPROGRESS) {
+                internet_connected = 0;
             }
         }
 

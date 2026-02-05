@@ -22,6 +22,11 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+static u_int8_t ntp_synchronized = 0;
+
+// --- Implementação RTC ---
+
+
 void clock_init(void)
 {
     rtc_init();
@@ -40,6 +45,11 @@ void clock_init(void)
 
     // Inicializa o RTC com a data definida
     rtc_set_datetime(&t);
+}
+
+bool is_ntp_synchronized(void)
+{
+    return ntp_synchronized;
 }
 
 bool clock_get_time(datetime_t *t)
@@ -143,6 +153,7 @@ void clock_sync_task(void *pvParameters) {
             uint32_t result = 0;
             if (xTaskNotifyWait(0, 0, &result, pdMS_TO_TICKS(10000)) == pdTRUE) {
                 if (result == 1) {
+                    ntp_synchronized = 1;
                     printf("Clock: Sincronizado com sucesso!\n");
                     
                     // Limpeza
@@ -160,6 +171,9 @@ void clock_sync_task(void *pvParameters) {
             cyw43_arch_lwip_begin();
             udp_remove(pcb);
             cyw43_arch_lwip_end();
+        } else {
+            // Wi-Fi desconectado
+            ntp_synchronized = 0;
         }
         
         // Se falhou ou não conectado, tenta novamente em 1 minuto

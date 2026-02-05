@@ -23,4 +23,8 @@
 #define DEFAULT_RAW_RECVMBOX_SIZE   8
 #define DEFAULT_ACCEPTMBOX_SIZE     8
 
+#define TCP_MSS                     1460
+// #define TCP_WND                     (8 * TCP_MSS)
+// #define TCP_SND_BUF                 (8 * TCP_MSS)
+
 #endif
