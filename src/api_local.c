@@ -307,8 +307,8 @@ static err_t http_recv_callback(void *arg, struct tcp_pcb *pcb, struct pbuf *p, 
                 "]},"
                 "\"led\":{\"name\":\"LED\",\"description\":\"Indica irrigação ativa.\"},"
                 "\"oled\":{\"name\":\"OLED\",\"description\":\"Display de status SSD1306.\"},"
-                "\"humidityAndTemperature\":{\"name\":\"AHT10\",\"description\":\"Sensor de Temp/Hum.\",\"humidity\":%.2f,\"temperature\":%.2f},"
-                "\"wifi\":{\"name\":\"Wi-Fi\",\"description\":\"Conexão sem fio.\",\"internet\":{\"connected\":%s},\"ip\":\"%s\"}"
+                "\"sensors\":{\"name\":\"AHT10\",\"description\":\"Sensor de Temp/Hum.\",\"humidity\":%.2f,\"temperature\":%.2f},"
+                "\"wifi\":{\"name\":\"Wi-Fi\",\"description\":\"Conexão sem fio.\",\"hasInternetConnection\":%s,\"ip\":\"%s\"}"
                 "},"
                 "\"system\":{\"os\":\"FreeRTOS\",\"version\":\"v1.0.1\"}"
                 "}",
