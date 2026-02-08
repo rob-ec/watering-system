@@ -61,6 +61,26 @@ Método | Endpoint | Descrição | Entrada | Retorno
 `GET`| `/schedule` | Retorna todo o calendário de horários de irrigação. | | `[{index: int, hour: int, minute: int, duration: int, active: int},...]` 
 `POST` | `/schedule` | Atualiza um item do agendamento. | `{index: int, hour: int, minute: int, duration: int, active: int}` | `{status: string}`
 
+### Rede Externa
+
+Para habilitar acesso a api externa é necessário fornecer as informações de acesso em [src/api_global.h](src/api_global.h).
+
+```c
+ // https://sua-api.exemplo.com
+ #define API_GLOBAL_URL "URL_DA_SUA_API"
+ #define API_PORT 80
+
+ // login
+ #define API_CONNECTION_SERIAL_NUMBER "NUMERO_SERIAL_OU_LOGIN"
+ #define API_CONNECTION_SECRET_TOKEN "TOKEN_OU_SENHA"
+```
+
+Com isso feito, garanta que `ENABLE_GLOBAL_API` esteja configurada como `true` em [src/main.c](src/main.c).
+
+```c
+#define ENABLE_GLOBAL_API true
+```
+
 ## Autor
 
 * **Robson Gomes**

@@ -24,6 +24,9 @@
 #include "aht10.h"
 #include "clock.h"
 #include "api_local.h"
+#include "api_global.h"
+
+#define ENABLE_GLOBAL_API true
 
 // Definição de prioridades (Maior valor = Maior prioridade no FreeRTOS)
 #define PRIO_TASK_WIFI       2  // Baixa prioridade: conexão em background (evita travar UI)
@@ -85,8 +88,11 @@ int main() {
     xTaskCreate(irrigator_task, "Irrigator_Task", 256, NULL, PRIO_TASK_IRRIGATOR, &irrigator_task_handle);
 
     // Creates the API Local task (waits for WiFi then inits server)
-    xTaskCreate(api_local_task, "API_Task", 512, NULL, PRIO_TASK_WIFI, NULL);
+    xTaskCreate(api_local_task, "API_Local_Task", 512, NULL, PRIO_TASK_WIFI, NULL);
 
+    if (ENABLE_GLOBAL_API) {
+        xTaskCreate(api_global_task, "API_Global_Task", 512, NULL, PRIO_TASK_WIFI, NULL);
+    }
     // Starts the FreeRTOS scheduler.
     // From this point on, FreeRTOS takes control of the processor
     // and starts executing the created tasks.

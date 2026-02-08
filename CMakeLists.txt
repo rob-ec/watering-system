@@ -60,6 +60,7 @@ add_executable(irrigation_system
     src/clock.c
     src/aht10.c
     src/api_local.c
+    src/api_global.c
     ${CMAKE_CURRENT_LIST_DIR}/free_rtos_kernel/portable/MemMang/heap_4.c
 )
 
