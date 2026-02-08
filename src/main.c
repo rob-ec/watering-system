@@ -91,7 +91,7 @@ int main() {
     xTaskCreate(api_local_task, "API_Local_Task", 512, NULL, PRIO_TASK_WIFI, NULL);
 
     if (ENABLE_GLOBAL_API) {
-        xTaskCreate(api_global_task, "API_Global_Task", 512, NULL, PRIO_TASK_WIFI, NULL);
+        xTaskCreate(api_global_task, "API_Global_Task", 4096, NULL, PRIO_TASK_WIFI, NULL);
     }
     // Starts the FreeRTOS scheduler.
     // From this point on, FreeRTOS takes control of the processor
